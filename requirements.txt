@@ -1,0 +1,5 @@
+ascii-magic==2.3.0
+colorama==0.4.6
+numpy==2.2.0
+opencv-python==4.10.0.84
+pillow==11.0.0
