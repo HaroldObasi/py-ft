@@ -8,7 +8,7 @@ import os
 
 
 class Client:
-    def __init__(self, ws_url="ws://localhost:8001"):
+    def __init__(self, ws_url="ws://localhost:8001/room1"):
         self.ws_url = ws_url
         self.websocket = None
         self.connected = False
@@ -30,8 +30,6 @@ class Client:
 
         try:
             while self.connected:
-                await self.websocket.send("testing")
-
                 ret, frame = cap.read()
                 pil_image = Image.fromarray(
                     cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -46,8 +44,10 @@ class Client:
                 )
 
                 os.system('cls' if os.name == 'nt' else 'clear')
-                print_aimg(converted_frame)
+                frame = '\n'.join(converted_frame)
 
+                # sends ascii frame to server
+                await self.websocket.send(frame)
 
                 if not ret:
                     print("Error, could not read frame")

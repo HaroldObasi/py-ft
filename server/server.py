@@ -29,7 +29,7 @@ class Server:
             else:
                 self.rooms[room_name].add(websocket)
 
-            print("rooms: ", self.rooms)
+            print("Client: ", websocket, " connected to: ", room_name)
 
             while True:
                 async for message in websocket:
