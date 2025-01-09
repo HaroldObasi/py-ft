@@ -45,7 +45,7 @@ async def handler(websocket: ServerConnection):
 
 
 async def main():
-    server = Server("localhost", 8765)
+    server = Server("localhost", 8001)
     await server.start()
 
 
