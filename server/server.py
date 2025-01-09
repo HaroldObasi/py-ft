@@ -11,8 +11,24 @@ class Server:
         self.host = host
         self.port = port
 
-    def serve(self):
-        pass
+    async def handler(self, websocket: ServerConnection):
+        path = websocket.request.path
+        print("Client connected to path: ", path)
+
+        try:
+            await websocket.send("Connected to room: " + path)
+            while True:
+                async for message in websocket:
+                    print(message)
+
+                    await websocket.send("Hello world!")
+        except ConnectionClosedOK:
+            print("Client disconnected from path: ", path)
+
+    async def start(self):
+        async with serve(self.handler, self.host, self.port):
+            print("ws server started on port: ", self.port)
+            await asyncio.get_running_loop().create_future()
 
 
 async def handler(websocket: ServerConnection):
@@ -29,10 +45,8 @@ async def handler(websocket: ServerConnection):
 
 
 async def main():
-    PORT = 8001
-    async with serve(handler, "", PORT):
-        print("ws server started on port: ", PORT)
-        await asyncio.get_running_loop().create_future()  # run forever
+    server = Server("localhost", 8765)
+    await server.start()
 
 
 if __name__ == "__main__":
