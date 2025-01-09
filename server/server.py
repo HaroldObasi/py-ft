@@ -5,17 +5,16 @@ import asyncio
 from websockets.asyncio.server import serve, ServerConnection
 from websockets.exceptions import ConnectionClosedOK
 from room import Room
-
+from typing import Dict
 
 class Server:
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.rooms = {}
+        self.rooms: Dict[str, Room] = {}
 
     async def handler(self, websocket: ServerConnection):
         path = websocket.request.path
-        print("Client connected to path: ", path)
 
         try:
             if path.split("/")[-1] == "":
@@ -27,14 +26,17 @@ class Server:
             if room_name not in self.rooms:
                 self.rooms[room_name] = Room()
                 self.rooms[room_name].add(websocket)
+            else:
+                self.rooms[room_name].add(websocket)
 
             print("rooms: ", self.rooms)
 
             while True:
                 async for message in websocket:
+                    target_room = self.rooms[room_name]
+                    target_room.send_to_members(message)
+                    
                     print(message)
-
-                    await websocket.send("Hello world!")
         except ConnectionClosedOK:
             print("Client disconnected from path: ", path)
 
@@ -42,18 +44,6 @@ class Server:
         async with serve(self.handler, self.host, self.port):
             print("ws server started on port: ", self.port)
             await asyncio.get_running_loop().create_future()
-
-
-async def handler(websocket: ServerConnection):
-    path = websocket.request.path
-    print("Client connected to path: ", path)
-
-    await websocket.send("Connected to room: " + path)
-    while True:
-        async for message in websocket:
-            print(message)
-
-            await websocket.send("Hello world!")
 
 
 
