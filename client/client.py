@@ -1,10 +1,9 @@
 import asyncio
-from websockets.asyncio.client import connect
-from webcam import start_webcam
 import cv2
-from PIL import Image
-from ascii import covertImageToAscii, print_aimg
 import os
+from ascii import covertImageToAscii
+from websockets.asyncio.client import connect
+from PIL import Image
 
 
 class Client:
@@ -15,11 +14,20 @@ class Client:
 
     async def connect_to_server(self):
         self.websocket = await connect(self.ws_url)
+        
 
     async def handle_server(self):
-        while self.connected:
-            message = await self.websocket.recv()
-            print("message: ", message)
+        try:
+
+            while self.connected:
+                message = await self.websocket.recv()
+                print(message)
+
+                # os.system('cls' if os.name == 'nt' else 'clear')
+                await asyncio.sleep(0.1)
+
+        except: 
+            print("Error recieving messages")
 
     async def handle_webcam(self):
         cap = cv2.VideoCapture(0)
@@ -43,11 +51,14 @@ class Client:
                     False
                 )
 
-                os.system('cls' if os.name == 'nt' else 'clear')
+                
                 frame = '\n'.join(converted_frame)
 
                 # sends ascii frame to server
                 await self.websocket.send(frame)
+
+
+                await asyncio.sleep(0.033)  # About 30fps
 
                 if not ret:
                     print("Error, could not read frame")
@@ -65,6 +76,6 @@ class Client:
         self.connected = True
 
         await asyncio.gather(
+            self.handle_webcam(),
             self.handle_server(),
-            self.handle_webcam()
         )
